@@ -1,9 +1,13 @@
-﻿using ApplicationCore.DTO;
+﻿using ApplicationCore.Commands.Interfaces;
+using ApplicationCore.DTO;
 using ApplicationCore.Interfaces;
 using ApplicationCore.Interfaces.Repositories;
 using ApplicationCore.Interfaces.Services;
+using ApplicationCore.Queries.Interfaces;
 using Azure.Storage.Blobs;
+using Infrastructure.Commands;
 using Infrastructure.Data;
+using Infrastructure.Queries;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -21,13 +25,15 @@ builder.Services.AddSingleton(_ =>
     new BlobServiceClient(
         builder.Configuration["Azure:Blob:ConnectionString"]));
 
-//  Application services
+//  Application services ---- DI Registration
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IVideoProgressRepository, VideoProgressRepository>();
 builder.Services.AddScoped<IVideoProgressService, VideoProgressService>();
 builder.Services.Configure<LmsSettings>(
     builder.Configuration.GetSection("LmsSettings"));
+builder.Services.AddScoped<ICourseQuery, CourseQuery>();
+builder.Services.AddScoped<ICourseCommand, CourseCommand>();
 
 //  Controllers
 builder.Services.AddControllers();
