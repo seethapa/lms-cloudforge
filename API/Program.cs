@@ -1,12 +1,14 @@
 ﻿using ApplicationCore.DTO;
 using ApplicationCore.Interfaces;
+using ApplicationCore.Interfaces.Repositories;
+using ApplicationCore.Interfaces.Services;
+using Azure.Storage.Blobs;
 using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Azure.Storage.Blobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,7 @@ builder.Services.AddSingleton(_ =>
 //  Application services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IVideoProgressRepository, VideoProgressRepository>();
 builder.Services.AddScoped<IVideoProgressService, VideoProgressService>();
 builder.Services.Configure<LmsSettings>(
     builder.Configuration.GetSection("LmsSettings"));

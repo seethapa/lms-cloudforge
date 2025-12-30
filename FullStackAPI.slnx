@@ -2,4 +2,5 @@
   <Project Path="API/API.csproj" />
   <Project Path="ApplicationCore/ApplicationCore.csproj" />
   <Project Path="Infrastructure/Infrastructure.csproj" />
+  <Project Path="UnitTests/UnitTests.csproj" Id="7989294f-2576-414b-a271-a023b2557280" />
 </Solution>
