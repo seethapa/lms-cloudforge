@@ -1,10 +1,14 @@
-﻿using ApplicationCore.Interfaces;
+﻿using ApplicationCore.DTO;
+using ApplicationCore.Interfaces;
 using ApplicationCore.Model;
 using Infrastructure.Data;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,18 +18,35 @@ namespace Infrastructure.Services
     public class CourseService : ICourseService
     {
         private readonly MongoDbContext _db;
+        private readonly IMemoryCache _cache;
+        private readonly LmsSettings _settings;
 
-        public CourseService(MongoDbContext db)
+        private const string PublishedCoursesCacheKey = "published_courses";
+
+        public CourseService(MongoDbContext db, IMemoryCache cache, IOptions<LmsSettings> settings)
         {
             _db = db;
+            _cache = cache;
+            _settings = settings.Value;
         }
+
 
         // 🔹 Student / Public API
         public async Task<List<Course>> GetAllPublished()
         {
-            return await _db.Courses
+            if (_cache.TryGetValue(PublishedCoursesCacheKey, out List<Course> cached))
+                return cached;
+
+            var courses = await _db.Courses
                 .Find(c => c.IsPublished)
                 .ToListAsync();
+
+            _cache.Set(
+                PublishedCoursesCacheKey,
+                courses,
+                TimeSpan.FromMinutes(5));
+
+            return courses;
         }
 
         public async Task<Course?> GetById(string id)

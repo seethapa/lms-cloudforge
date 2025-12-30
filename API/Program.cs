@@ -1,26 +1,36 @@
-﻿using ApplicationCore.Interfaces;
+﻿using ApplicationCore.DTO;
+using ApplicationCore.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Azure.Storage.Blobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 🔹 Mongo
+//  Mongo
 builder.Services.AddSingleton<MongoDbContext>();
 
-// 🔹 Application services
+//AZURE BLOB STORAGE
+
+builder.Services.AddSingleton(_ =>
+    new BlobServiceClient(
+        builder.Configuration["Azure:Blob:ConnectionString"]));
+
+//  Application services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IVideoProgressService, VideoProgressService>();
+builder.Services.Configure<LmsSettings>(
+    builder.Configuration.GetSection("LmsSettings"));
 
-// 🔹 Controllers
+//  Controllers
 builder.Services.AddControllers();
 
 
-// 🔐 JWT AUTHENTICATION  (🔥 THIS WAS MISSING)
+//  JWT AUTHENTICATION  (🔥 THIS WAS MISSING)
 builder.Services
     .AddAuthentication(options =>
     {
@@ -43,9 +53,9 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddMemoryCache();
 
-
-// 🔹 Swagger
+//  Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -82,7 +92,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
-// 🔹 CORS
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -90,10 +100,13 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod()
                         .AllowAnyHeader());
 });
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 var app = builder.Build();
 
-// 🔹 Swagger
+// Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -102,7 +115,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll");
 
-// 🔴 AUTH ORDER IS CRITICAL
+// AUTH ORDER
 app.UseAuthentication();
 app.UseAuthorization();
 

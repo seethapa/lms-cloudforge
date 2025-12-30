@@ -2,6 +2,7 @@
 using ApplicationCore.Interfaces;
 using ApplicationCore.Model;
 using Infrastructure.Data;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -14,16 +15,24 @@ namespace Infrastructure.Services
     public class VideoProgressService : IVideoProgressService
     {
         private readonly MongoDbContext _db;
+        private readonly ILogger<VideoProgressService> _logger;
 
-        public VideoProgressService(MongoDbContext db)
+        public VideoProgressService(
+         MongoDbContext db,
+         ILogger<VideoProgressService> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         public async Task<VideoProgress> UpdateProgress(
             string userId,
             UpdateVideoProgressRequest request)
         {
+            _logger.LogInformation(
+          "Updating progress. UserId={UserId}, LessonId={LessonId}",
+          userId, request.LessonId);
+
             var progressId = $"{userId}_{request.LessonId}";
 
             var completed =
@@ -44,6 +53,8 @@ namespace Infrastructure.Services
                 update,
                 new UpdateOptions { IsUpsert = true });
 
+            _logger.LogInformation("Progress updated successfully: {Id}", progressId);
+
             return await _db.VideoProgress
                 .Find(x => x.Id == progressId)
                 .FirstAsync();
@@ -53,6 +64,9 @@ namespace Infrastructure.Services
             string userId,
             string lessonId)
         {
+            _logger.LogInformation(
+         "Get progress. UserId={UserId}, LessonId={lessonId}",
+         userId, lessonId);
             var id = $"{userId}_{lessonId}";
 
             return await _db.VideoProgress
