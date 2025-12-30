@@ -14,7 +14,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 // 🔹 Application services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
-builder.Services.AddScoped<IProgressService, ProgressService>();
+builder.Services.AddScoped<IVideoProgressService, VideoProgressService>();
 
 // 🔹 Controllers
 builder.Services.AddControllers();

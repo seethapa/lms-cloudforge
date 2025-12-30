@@ -20,15 +20,60 @@ namespace Infrastructure.Services
             _db = db;
         }
 
-        public async Task<List<Course>> GetAll()
+        // 🔹 Student / Public API
+        public async Task<List<Course>> GetAllPublished()
         {
-            return await _db.Courses.Find(_ => true).ToListAsync();
+            return await _db.Courses
+                .Find(c => c.IsPublished)
+                .ToListAsync();
         }
 
-        public async Task Create(Course course)
+        public async Task<Course?> GetById(string id)
         {
-            course.Id = Guid.NewGuid().ToString();
-            await _db.Courses.InsertOneAsync(course);
+            return await _db.Courses
+                .Find(c => c.Id == id && c.IsPublished)
+                .FirstOrDefaultAsync();
+        }
+
+        // 🔹 Admin / Trainer APIs
+        public async Task<Course> Create(Course course)
+        {
+            course.Id ??= Guid.NewGuid().ToString();
+            course.CreatedAt = DateTime.UtcNow;
+
+            try
+            {
+                await _db.Courses.InsertOneAsync(course);
+                return course;
+            }
+            catch (MongoWriteException ex)
+            {
+                throw new Exception($"Mongo insert failed: {ex.Message}");
+            }
+        }
+
+        public async Task<Course> Update(string id, Course course)
+        {
+            var update = Builders<Course>.Update
+                .Set(x => x.Title, course.Title)
+                .Set(x => x.Description, course.Description)
+                .Set(x => x.Level, course.Level)
+                .Set(x => x.ThumbnailUrl, course.ThumbnailUrl)
+                .Set(x => x.IsPublished, course.IsPublished);
+
+            var result = await _db.Courses.UpdateOneAsync(
+                c => c.Id == id,
+                update);
+
+            if (result.MatchedCount == 0)
+                throw new Exception("Course not found");
+
+            return await _db.Courses.Find(c => c.Id == id).FirstAsync();
+        }
+
+        public async Task Delete(string id)
+        {
+            await _db.Courses.DeleteOneAsync(c => c.Id == id);
         }
     }
 }

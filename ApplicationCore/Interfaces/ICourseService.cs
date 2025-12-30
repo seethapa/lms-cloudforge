@@ -9,7 +9,10 @@ namespace ApplicationCore.Interfaces
 {
     public interface ICourseService
     {
-        Task<List<Course>> GetAll();
-        Task Create(Course course);
+        Task<List<Course>> GetAllPublished();
+        Task<Course?> GetById(string id);
+        Task<Course> Create(Course course);
+        Task<Course> Update(string id, Course course);
+        Task Delete(string id);
     }
 }

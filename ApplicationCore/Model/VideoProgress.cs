@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,15 +11,19 @@ namespace ApplicationCore.Model
 {
     public class VideoProgress
     {
-        [JsonProperty("id")]
-        public string Id { get; set; }
+        [BsonId]
+        [BsonRepresentation(BsonType.String)]
+        public string Id { get; set; } = default!;
+        // userId_lessonId
 
-        public string UserId { get; set; }
-        public string CourseId { get; set; }
-        public string LessonId { get; set; }
+        public string UserId { get; set; } = default!;
+        public string CourseId { get; set; } = default!;
+        public string LessonId { get; set; } = default!;
 
-        public int WatchedPercentage { get; set; }
-        public bool IsCompleted { get; set; }
-        public DateTime LastWatchedAt { get; set; } = DateTime.UtcNow;
+        public int WatchedSeconds { get; set; }
+        public int TotalSeconds { get; set; }
+        public bool Completed { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
     }
 }
